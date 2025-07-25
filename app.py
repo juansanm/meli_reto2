@@ -1,10 +1,8 @@
 import pandas as pd
 import streamlit as st
 from pathlib import Path
-import io     # ← para el buffer en memoria
-
+import io    
 st.set_page_config(page_title="Consulta de similitud", layout="wide")
-
 @st.cache_data
 def load_df(path: Path):
     if path.suffix == ".csv":
@@ -13,13 +11,9 @@ def load_df(path: Path):
         return pd.read_parquet(path)
     else:
         raise ValueError("Use .csv o .parquet")
-
 DATA_PATH = Path("df_final.csv")
 df = load_df(DATA_PATH)
-
 st.title("Buscador de Items Similares")
-
-# 1️⃣  Botón de descarga
 csv_buffer = io.StringIO()
 df.to_csv(csv_buffer, index=False)
 st.download_button(
@@ -29,13 +23,9 @@ st.download_button(
     mime="text/csv",
     help="Exporta todo el DataFrame a un archivo CSV"
 )
-
-# 2️⃣  Desplegable y tabla de coincidencias
 ite_options = df["ITE_ITEM_TITLE1"].sort_values().unique()
 selected_title = st.selectbox("Título (ITE_ITEM_TITLE1)", ite_options, index=0)
-
 resultados = df[df["ITE_ITEM_TITLE1"] == selected_title]
-
 st.subheader(f"Coincidencias para «{selected_title}»")
 st.dataframe(
     resultados[["ITE_ITEM_TITLE2", "Score_Similitud"]]
